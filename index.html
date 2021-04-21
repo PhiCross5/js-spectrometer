@@ -22,43 +22,74 @@
 
 
     <body>
-    <h1>SPECTRUM ANALYZER v0.1 (proof-of-concept)</h1>
-    <p>add any sound file as "song.mp3" to the same folder as the page, reload and click play.</p>
+    <h1>SPECTRUM ANALYZER v0.2 (proof-of-concept)</h1>
+    <input type="file" id=input_file name="theFile"
+    accept="audio/mp3"></input>
+    <p>Click the above button to pick a file then click play.</p>
         <div id='volume' class='bar'>ok?</div>
-        <audio controls id='sound' src='song.mp3'></audio>
+        <audio controls id='sound'></audio>
     </body>
     <script defer>
+
+        //make an analyzer (it computes frequencies in an audio stream)
+        //also make an audio context (the whole environment where audio streams operate)
         var audioCtx = new AudioContext();
         var analyser = audioCtx.createAnalyser();
-
-        let audioElement=document.getElementById("sound");
-        let source=audioCtx.createMediaElementSource(audioElement);
         
-        source.connect(analyser);
-        source.connect(audioCtx.destination);
+        //get handles for relevant elements of the page 
+        let audioElement=document.getElementById("sound");
+        let file=document.getElementById("input_file");
+        //set the audio element as the starting point for the audio context.
+        let source=audioCtx.createMediaElementSource(audioElement);
+        //This function sets everything up.
+        function setup(){
+            //make a URL pointing to whatever file was picked through the button.
+            audioElement.src=URL.createObjectURL(file.files[0]);
 
-        let data = new Uint8Array(analyser.frequencyBinCount);
-        let numBars=6
-        var bar=[]
-        for(let i=0;i<numBars;i++){
-            bar.push(document.createElement("DIV"))
-            bar[i].style="background-color:#3310D1; color:white; width:60px;margin:6px;"
-            bar[i].textContent="band"+i
-            document.body.appendChild(bar[i])
-        }
+            //direct output of the source (in this case, the audio element)
+            //  into both the analyser and the context's destination (speakers)
+            source.connect(analyser);
+            source.connect(audioCtx.destination);
 
-        requestAnimationFrame(loopingFunction);
-        function loopingFunction(){
-            requestAnimationFrame(loopingFunction);
-            analyser.getByteFrequencyData(data);
-            for(i=0;i<bar.length;i++){
-                bar[i].style.width=(data[Math.round(data.length/bar.length)*i]*2)+"px"
+            //make a buffer for the analyser's contents.
+            let data = new Uint8Array(analyser.frequencyBinCount);
+
+            //create any given number of bars that will be displayed on the page.
+            let numBars=6;
+            var bar=[];
+            for(let i=0;i<numBars;i++){
+                bar.push(document.createElement("DIV"));
+                bar[i].style="background-color:#3310D1; color:white; width:60px;margin:6px;";
+                bar[i].textContent="band"+i;
+                document.body.appendChild(bar[i]);
             }
-        }
 
-        document.addEventListener('keydown',(event)=>{
-           if(event.key=='p')
-           song.play();
-        });
+            //update everytime the screen refreshes
+            requestAnimationFrame(loopingFunction);
+            function loopingFunction(){
+                requestAnimationFrame(loopingFunction);
+                //get amplitude at all frequencies as unsigned 8-bit integers.
+                analyser.getByteFrequencyData(data);
+                //CORE PRINCIPLE HAPPENS HERE:
+                //  every bar is associated to a certain frequency;
+                //  the frequency for a given bar is directly proportional to how late it was added,
+                //  thus due to elements being "DIV"s, bars further down the page are related to higher pitched sounds.
+                //  frequencies are picked using nearest-neighbor interpolation and are spaced evenly.
+                for(i=0;i<bar.length;i++){
+                    bar[i].style.width=(data[Math.round(data.length/bar.length)*i] *2 )+"px";
+                }
+            }
+
+            //play audio on P key.
+            document.addEventListener('keydown',(event)=>{
+                if(event.key=='p'){
+                    audioElement.play();
+                }
+            });
+        }   
+        file.addEventListener('input',setup);
+
+     
+
     </script>
 </html>
