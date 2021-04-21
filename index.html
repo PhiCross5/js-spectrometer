@@ -8,12 +8,19 @@
 
         <style>
             .bar{
-
-                background-color:red;
+                background-color:#3310D1D1; 
+                color:white; 
                 width:60px;
+                margin:6px;
+            }
+            html{
+                color:white;
+                padding:5px;
+                width=100vw;
+                height=100vh;
+                background-image:radial-gradient(circle at top left, #15040F, #320221);
             }
             body{
-                padding:5px;
                 width=100%;
                 height=100%;
             }
@@ -60,7 +67,7 @@
             var bar=[];
             for(let i=0;i<numBars;i++){
                 bar.push(document.createElement("DIV"));
-                bar[i].style="background-color:#3310D1; color:white; width:60px;margin:6px;";
+                bar[i].className='bar'
                 bar[i].textContent="band"+i;
                 document.body.appendChild(bar[i]);
             }
