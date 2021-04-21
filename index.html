@@ -38,6 +38,7 @@
         <audio controls id='sound'></audio>
     </body>
     <script defer>
+        var barsMade=false;
 
         //make an analyzer (it computes frequencies in an audio stream)
         //also make an audio context (the whole environment where audio streams operate)
@@ -64,12 +65,14 @@
 
             //create any given number of bars that will be displayed on the page.
             let numBars=6;
-            var bar=[];
-            for(let i=0;i<numBars;i++){
-                bar.push(document.createElement("DIV"));
-                bar[i].className='bar'
-                bar[i].textContent="band"+i;
-                document.body.appendChild(bar[i]);
+            if(barsMade == false){
+                var bar=[];
+                for(let i=0;i<numBars;i++){
+                    bar.push(document.createElement("DIV"));
+                    bar[i].className='bar'
+                    bar[i].textContent="band"+i;
+                    document.body.appendChild(bar[i]);
+                }
             }
 
             //update everytime the screen refreshes
@@ -86,6 +89,8 @@
                 for(i=0;i<bar.length;i++){
                     bar[i].style.width=(data[Math.round(data.length/bar.length)*i] *2 )+"px";
                 }
+
+            barsMade=true;
             }
 
             //play audio on P key.
